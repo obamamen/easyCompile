@@ -53,6 +53,8 @@ thing getThing(FILE* file, char start, char end, int priority) {
     }
     if (length == 0) {
         fsetpos(file, &(fpos_t){oldCursorPos}); 
+        t.start = startPos;
+        t.length = length;
         return t;
     }
 
@@ -75,6 +77,7 @@ thing getThing(FILE* file, char start, char end, int priority) {
     return t;
 }
 
+
 int main(int arc, char **argv) {
     FILE *file = fopen("easycompile.ec", "r");
     if (file == NULL) {
@@ -82,7 +85,7 @@ int main(int arc, char **argv) {
         return 1;
     }
 
-    char* sepName = "";
+    char* sepName = "standard";
     if (arc == 2) {
         sepName = argv[1];
     }
@@ -95,6 +98,7 @@ int main(int arc, char **argv) {
     while (condition) {
         thing sep = getThing(file, '*','*', 1);
         if (sep.string == NULL) {
+            limit = sep.start + sep.length;
             fsetpos(file, &(fpos_t){0}); 
             condition = 0;
             break;
@@ -112,7 +116,7 @@ int main(int arc, char **argv) {
     }
     fsetpos(file, &(fpos_t){startPos});
 
-    if (limit == 0) {
+    if (found == 0) {
         condition = 1;
         found = 0;
         startPos = 0;
@@ -136,6 +140,15 @@ int main(int arc, char **argv) {
             free(sep.string);
         }
         fsetpos(file, &(fpos_t){startPos});
+    }
+
+    long size = (long)fseek(file, 0, SEEK_END);
+    size = ftell(file);
+
+    fsetpos(file, &(fpos_t){startPos});
+
+    if (limit == 0) {
+        limit = (int)size;
     }
 
 
